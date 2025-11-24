@@ -151,7 +151,7 @@ const TeacherDashboard = () => {
                 required
                 className="input-field"
                 min={new Date().toISOString().split('T')[0]}
-                max={new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString().split('T')[0]}
+                max={new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]}
                 onChange={e => setNewSlot({ ...newSlot, date: e.target.value })}
               />
             </div>
