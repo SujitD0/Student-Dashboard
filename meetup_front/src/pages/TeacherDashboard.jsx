@@ -98,6 +98,28 @@ const TeacherDashboard = () => {
   const handleAdd = async (e) => {
     e.preventDefault();
     try {
+      // Client-side validation for past time
+      const now = new Date();
+      const selectedDate = new Date(newSlot.date);
+      const isToday = selectedDate.toDateString() === now.toDateString();
+
+      if (isToday) {
+        let hour24 = parseInt(newSlot.hour);
+        if (newSlot.period === 'PM' && hour24 !== 12) {
+          hour24 += 12;
+        } else if (newSlot.period === 'AM' && hour24 === 12) {
+          hour24 = 0;
+        }
+
+        const slotTime = new Date(selectedDate);
+        slotTime.setHours(hour24, parseInt(newSlot.minute), 0, 0);
+
+        if (slotTime < now) {
+          alert("Cannot create slots in the past. Please select a future time.");
+          return;
+        }
+      }
+
       await addSlot(newSlot);
       setNewSlot({ ...newSlot, hour: '9', minute: '00', period: 'AM', topic: '', meeting_link: '' });
       alert('Schedule Updated');
@@ -124,8 +146,14 @@ const TeacherDashboard = () => {
           <form onSubmit={handleAdd} className="space-y-4">
             <div>
               <label className="block text-sm font-bold">Date</label>
-              <input type="date" required className="input-field"
-                onChange={e => setNewSlot({ ...newSlot, date: e.target.value })} />
+              <input
+                type="date"
+                required
+                className="input-field"
+                min={new Date().toISOString().split('T')[0]}
+                max={new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString().split('T')[0]}
+                onChange={e => setNewSlot({ ...newSlot, date: e.target.value })}
+              />
             </div>
             <div>
               <label className="block text-sm font-bold">Time</label>
@@ -201,8 +229,8 @@ const TeacherDashboard = () => {
                         <div className="text-sm text-gray-600">{booking.student.email}</div>
                       </div>
                       <span className={`px-2 py-1 text-xs font-bold rounded ${booking.status === 'confirmed' ? 'bg-yellow-500 text-black' :
-                          booking.status === 'cancelled' ? 'bg-red-500 text-white' :
-                            'bg-gray-500 text-white'
+                        booking.status === 'cancelled' ? 'bg-red-500 text-white' :
+                          'bg-gray-500 text-white'
                         }`}>{booking.status.toUpperCase()}</span>
                     </div>
                     <div className="mt-4 pt-4 border-t border-gray-200">
