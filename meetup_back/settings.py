@@ -67,10 +67,11 @@ WSGI_APPLICATION = 'meetup_back.wsgi.application'
 
 
 # Database configuration
-if os.getenv('DATABASE_URL'):
+database_url = os.getenv('DATABASE_URL')
+if database_url:
     # Production database (PostgreSQL on Render)
     DATABASES = {
-        'default': dj_database_url.parse(os.getenv('DATABASE_URL'))
+        'default': dj_database_url.parse(database_url)
     }
 else:
     # Development database (SQLite)
