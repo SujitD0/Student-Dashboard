@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const API = axios.create({
-  baseURL: "https://student-dashboard-kh1m.onrender.com/api/",
+  baseURL: import.meta.env.VITE_API_URL || "https://student-dashboard-kh1m.onrender.com/api/",
 });
 
 
