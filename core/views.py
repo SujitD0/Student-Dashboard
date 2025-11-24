@@ -2,7 +2,9 @@
 from rest_framework import viewsets, status, generics
 from rest_framework.response import Response
 from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.exceptions import ValidationError
 from django.shortcuts import get_object_or_404
+from django.utils import timezone
 
 from .models import TimeSlot, Booking
 from django.contrib.auth import get_user_model
@@ -29,6 +31,8 @@ class TimeSlotViewSet(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         # teacher creates slot; teacher_id field in serializer can be used
         # but force teacher to be request.user
+        if serializer.validated_data['start'] < timezone.now():
+            raise ValidationError("Cannot create slots in the past.")
         serializer.save(teacher=self.request.user)
 
     def get_queryset(self):
