@@ -1,0 +1,28 @@
+/* stylelint-disable at-rule-no-unknown */
+/* Allow Tailwind's @apply and other at-rules to pass stylelint/postcss checks */
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  @apply bg-secondary text-primary;
+  font-family: 'Inter', sans-serif; /* Ensure a clean font */
+}
+
+/* Custom Neo-Brutalist Button Class */
+.btn-primary {
+  @apply bg-primary text-secondary px-4 py-2 font-bold border-2 border-primary hover:-translate-y-1 hover:shadow-hard transition-all duration-200 disabled:opacity-50 disabled:hover:translate-y-0 disabled:hover:shadow-none;
+}
+
+.btn-secondary {
+  @apply bg-white text-primary px-4 py-2 font-bold border-2 border-primary hover:-translate-y-1 hover:shadow-hard transition-all duration-200;
+}
+
+.input-field {
+  @apply w-full border-2 border-primary p-2 outline-none focus:shadow-hard transition-all duration-200;
+}
+
+.card {
+  @apply border-2 border-primary p-6 bg-white hover:shadow-hard transition-shadow duration-300;
+}

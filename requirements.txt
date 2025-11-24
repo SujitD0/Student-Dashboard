@@ -1,0 +1,22 @@
+# Core Django packages
+Django==5.2.6
+djangorestframework==3.16.1
+django-cors-headers==4.9.0
+djangorestframework-simplejwt==5.5.1
+
+# Database
+psycopg2-binary==2.9.10
+dj-database-url==2.3.0
+
+# WSGI Server for production
+gunicorn==23.0.0
+
+# Static files
+whitenoise==6.9.0
+
+# Environment variables
+python-dotenv==1.1.1
+
+# Utilities
+PyJWT==2.10.1
+requests==2.32.5
