@@ -35,6 +35,11 @@ class TimeSlotViewSet(viewsets.ModelViewSet):
             raise ValidationError("Cannot create slots in the past.")
         serializer.save(teacher=self.request.user)
 
+    def perform_update(self, serializer):
+        if 'start' in serializer.validated_data and serializer.validated_data['start'] < timezone.now():
+            raise ValidationError("Cannot move slots to the past.")
+        serializer.save()
+
     def get_queryset(self):
         qs = super().get_queryset()
         # optional filters: teacher_id, date
