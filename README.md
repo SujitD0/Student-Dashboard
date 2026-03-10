@@ -1,4 +1,4 @@
-# 📚 Student-Teacher Meeting Scheduler
+# 📚 Student-Teacher Meeti Scheduler
 
 A modern, full-stack web application that streamlines the process of scheduling meetings between students and teachers. Built with Django REST Framework and React, this platform offers an intuitive interface for managing availability, booking sessions, and facilitating seamless communication.
 
