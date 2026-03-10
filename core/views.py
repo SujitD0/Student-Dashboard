@@ -6,9 +6,9 @@ from rest_framework.exceptions import ValidationError
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
 
-from .models import TimeSlot, Booking
+from .models import TimeSlot, Booking, Notification
 from django.contrib.auth import get_user_model
-from .serializers import UserSerializer, TimeSlotSerializer, BookingSerializer
+from .serializers import UserSerializer, TimeSlotSerializer, BookingSerializer, NotificationSerializer
 from .permissions import IsTeacher, IsStudent
 from rest_framework.decorators import action
 
@@ -71,7 +71,7 @@ class BookingViewSet(viewsets.ModelViewSet):
         # Ensure slot is still available
         slot = serializer.validated_data["slot"]
         if not slot.is_available:
-            raise serializers.ValidationError("Slot already booked")
+            raise ValidationError("Slot already booked")
         # mark slot unavailable
         slot.is_available = False
         slot.save()
@@ -98,3 +98,44 @@ class BookingViewSet(viewsets.ModelViewSet):
         booking.save()
         # Placeholder for notification/email send
         return Response({"status": "booking cancelled"})
+
+class NotificationViewSet(viewsets.ModelViewSet):
+    """
+    Notifications:
+    - Teachers can create notifications for students they have bookings with.
+    - Students can list/read their notifications.
+    """
+    queryset = Notification.objects.all().order_by("-created_at")
+    serializer_class = NotificationSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        user = self.request.user
+        if user.role == "student":
+            return Notification.objects.filter(student=user).order_by("-created_at")
+        if user.role == "teacher":
+            return Notification.objects.filter(teacher=user).order_by("-created_at")
+        return Notification.objects.none()
+
+    def perform_create(self, serializer):
+        user = self.request.user
+        if user.role != "teacher":
+            raise ValidationError("Only teachers can send notifications.")
+
+        booking_id = self.request.data.get("booking")
+        booking = get_object_or_404(Booking, id=booking_id)
+
+        # Ensure the teacher owns this booking's slot
+        if booking.slot.teacher != user:
+            raise ValidationError("You can only send notifications for your own bookings.")
+
+        serializer.save(teacher=user, student=booking.student, booking=booking)
+
+    @action(detail=True, methods=["post"], permission_classes=[IsAuthenticated])
+    def mark_read(self, request, pk=None):
+        notification = self.get_object()
+        if request.user != notification.student:
+            return Response({"detail": "Not allowed"}, status=status.HTTP_403_FORBIDDEN)
+        notification.is_read = True
+        notification.save()
+        return Response({"status": "marked as read"})
