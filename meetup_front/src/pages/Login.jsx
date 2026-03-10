@@ -7,7 +7,7 @@ import { User, Lock, Mail } from 'lucide-react';
 const Login = () => {
   const location = useLocation();
   const [isLogin, setIsLogin] = useState(true);
-  const [formData, setFormData] = useState({ email: '', password: '', name: '', role: 'student', subject: '' });
+  const [formData, setFormData] = useState({ email: '', password: '', name: '', role: 'student', subject: '', institution: '' });
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -39,6 +39,7 @@ const Login = () => {
         first_name: data.name.split(' ')[0],
         last_name: data.name.split(' ')[1] || '',
         role: data.role,
+        institution: data.institution || '',
       };
       await API.post('register/', payload);
       return true;
@@ -114,6 +115,16 @@ const Login = () => {
                     onChange={e => setFormData({ ...formData, subject: e.target.value })} />
                 </div>
               )}
+
+              <div>
+                <label className="block font-bold mb-1">College / School Name</label>
+                <div className="flex items-center border-2 border-primary p-2 bg-white">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 10v6M2 10l10-5 10 5-10 5z" /><path d="M6 12v5c3 3 10 3 12 0v-5" /></svg>
+                  <input type="text" placeholder="e.g. MIT, Stanford University" className="w-full ml-2 outline-none"
+                    value={formData.institution}
+                    onChange={e => setFormData({ ...formData, institution: e.target.value })} />
+                </div>
+              </div>
             </>
           )}
 

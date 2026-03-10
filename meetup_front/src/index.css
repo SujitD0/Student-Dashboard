@@ -5,9 +5,11 @@
 @tailwind components;
 @tailwind utilities;
 
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+
 body {
   @apply bg-secondary text-primary;
-  font-family: 'Inter', sans-serif; /* Ensure a clean font */
+  font-family: 'Inter', sans-serif;
 }
 
 /* Custom Neo-Brutalist Button Class */
@@ -25,4 +27,23 @@ body {
 
 .card {
   @apply border-2 border-primary p-6 bg-white hover:shadow-hard transition-shadow duration-300;
+}
+
+/* Marquee animation for the scrolling band */
+@keyframes marquee {
+  0% {
+    transform: translateX(0%);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+.animate-marquee {
+  animation: marquee 20s linear infinite;
+}
+
+/* Smooth scroll */
+html {
+  scroll-behavior: smooth;
 }

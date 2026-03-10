@@ -2,12 +2,13 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 from .token_claims import MyTokenObtainPairSerializer
-from .views import RegisterView, TimeSlotViewSet, BookingViewSet
+from .views import RegisterView, TimeSlotViewSet, BookingViewSet, NotificationViewSet
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
 router = DefaultRouter()
 router.register(r"slots", TimeSlotViewSet, basename="slots")
 router.register(r"bookings", BookingViewSet, basename="bookings")
+router.register(r"notifications", NotificationViewSet, basename="notifications")
 
 class MyTokenObtainPairView(TokenObtainPairView):
     serializer_class = MyTokenObtainPairSerializer

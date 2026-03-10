@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import API from '../api/api';
 import { jwtDecode } from "jwt-decode";
-import { Trash2, Calendar, Clock, Filter, BookOpen } from 'lucide-react';
+import { Trash2, Calendar, Clock, Filter, BookOpen, Send } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 const TeacherDashboard = () => {
-  const [user, setUser] = useState(null);
+  const [_user, setUser] = useState(null);
   const [slots, setSlots] = useState([]);
   const [bookings, setBookings] = useState([]);
   const [newSlot, setNewSlot] = useState({
@@ -18,6 +18,9 @@ const TeacherDashboard = () => {
     meeting_link: ''
   });
   const [filter, setFilter] = useState('all'); // all, available, booked
+  const [notifyBooking, setNotifyBooking] = useState(null);
+  const [notifyMessage, setNotifyMessage] = useState('');
+  const [notifySending, setNotifySending] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -27,13 +30,13 @@ const TeacherDashboard = () => {
         const decoded = jwtDecode(token);
         setUser({ id: decoded.user_id, username: decoded.username, role: decoded.role });
         fetchData();
-      } catch (e) {
+      } catch {
         navigate('/login');
       }
     } else {
       navigate('/login');
     }
-  }, []);
+  }, [navigate]);
 
   const fetchData = async () => {
     try {
@@ -134,6 +137,26 @@ const TeacherDashboard = () => {
     if (filter === 'booked') return !slot.is_available;
     return true;
   });
+
+  const sendNotification = async (e) => {
+    e.preventDefault();
+    if (!notifyBooking || !notifyMessage.trim()) return;
+    setNotifySending(true);
+    try {
+      await API.post('notifications/', {
+        booking: notifyBooking.id,
+        message: notifyMessage.trim(),
+      });
+      alert('Notification sent to ' + notifyBooking.student.first_name + ' ' + notifyBooking.student.last_name);
+      setNotifyBooking(null);
+      setNotifyMessage('');
+    } catch (error) {
+      console.error('Failed to send notification', error);
+      alert('Failed to send notification');
+    } finally {
+      setNotifySending(false);
+    }
+  };
 
   return (
     <div className="p-6 max-w-6xl mx-auto">
@@ -237,6 +260,12 @@ const TeacherDashboard = () => {
                       <div className="text-sm"><span className="text-gray-600">Time:</span> {new Date(booking.slot.start).toLocaleDateString()} @ {new Date(booking.slot.start).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true })}</div>
                       <div className="text-sm mt-1"><span className="text-gray-600">Purpose:</span> {booking.purpose}</div>
                     </div>
+                    <button
+                      onClick={() => setNotifyBooking(booking)}
+                      className="mt-3 w-full flex items-center justify-center gap-2 px-3 py-2 text-sm bg-black text-white font-bold border-2 border-black hover:-translate-y-0.5 hover:shadow-hard transition-all duration-200"
+                    >
+                      <Send className="w-4 h-4" /> Send Notification
+                    </button>
                   </div>
                 ))}
               </div>
@@ -301,6 +330,68 @@ const TeacherDashboard = () => {
           </div>
         </div>
       </div>
+
+      {/* Notification Modal */}
+      {notifyBooking && (
+        <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50">
+          <div className="bg-white p-8 max-w-md w-full border-4 border-black shadow-2xl">
+            <h2 className="text-2xl font-black mb-4">Send Notification</h2>
+            <div className="mb-4 p-3 bg-gray-100 rounded border border-gray-300">
+              <div className="text-sm"><strong>To:</strong> {notifyBooking.student.first_name} {notifyBooking.student.last_name}</div>
+              <div className="text-sm"><strong>Booking:</strong> {new Date(notifyBooking.slot.start).toLocaleDateString()} @ {new Date(notifyBooking.slot.start).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true })}</div>
+            </div>
+            <form onSubmit={sendNotification} className="space-y-4">
+              <div>
+                <label className="font-bold block mb-1">Quick Templates</label>
+                <div className="flex flex-wrap gap-2">
+                  {[
+                    { label: 'Class Prep', text: 'Please prepare the following for our upcoming session: \n\n• Review the assigned topics\n• Bring any questions or doubts\n• Have your notebook ready' },
+                    { label: 'Schedule Change', text: 'Important: There has been a change regarding our scheduled session. Please check the updated details and confirm your availability.' },
+                    { label: 'Assignment', text: 'Please complete the following assignment before our next session: \n\n' },
+                    { label: 'General', text: '' },
+                  ].map((tpl) => (
+                    <button
+                      key={tpl.label}
+                      type="button"
+                      onClick={() => setNotifyMessage(tpl.text)}
+                      className="text-xs px-2 py-1 border-2 border-black hover:bg-black hover:text-white transition-all duration-150"
+                    >
+                      {tpl.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <div>
+                <label className="font-bold block mb-1">Message</label>
+                <textarea
+                  className="input-field h-32"
+                  required
+                  value={notifyMessage}
+                  onChange={e => setNotifyMessage(e.target.value)}
+                  placeholder="Write your message to the student..."
+                />
+              </div>
+              <div className="flex gap-4 mt-6">
+                <button
+                  type="button"
+                  onClick={() => { setNotifyBooking(null); setNotifyMessage(''); }}
+                  className="btn-secondary w-1/2"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={notifySending || !notifyMessage.trim()}
+                  className="btn-primary w-1/2 flex items-center justify-center gap-2"
+                >
+                  <Send className="w-4 h-4" />
+                  {notifySending ? 'Sending...' : 'Send'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
